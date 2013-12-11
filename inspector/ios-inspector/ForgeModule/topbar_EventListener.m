@@ -38,26 +38,51 @@ UINavigationBar *topbar;
 @implementation topbar_EventListener
 
 + (void)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+	// stwt: iOS 7+ - make navbar smaller by offsetting top size by 45
+	int topbarOffset = floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_6_1 ? 0 : 45;
+
 	// Create the topbar
-	topbar = [[UINavigationBar alloc] initWithFrame:CGRectMake(0.0f, [ForgeApp sharedApp].webviewTop, 320.0f, 44.0f)];
+	topbar = [[UINavigationBar alloc] initWithFrame:CGRectMake(0.0f, [ForgeApp sharedApp].webviewTop - topbarOffset, 320.0f, 44.0f)];
 	topbar.autoresizingMask = UIViewAutoresizingNone | UIViewAutoresizingFlexibleWidth;
+
+	if (floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_6_1) {
+		// nada
+	} else {
+		// stwt: iOS 7+ - remove shadow image (hairline under bar)
+		[topbar setBackgroundImage:[UIImage new]
+					forBarPosition:UIBarPositionAny
+						barMetrics:UIBarMetricsDefault];
+
+
+		[topbar setShadowImage:[UIImage new]];
+
+		// Set default color to white
+		UIColor *backgroundColor = [UIColor colorWithRed:255/255.0f green:255/255.0f blue:255/255.0f alpha:1.0f];
+		topbar.backgroundColor = backgroundColor;
+	}
+
 	if (floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_6_1) {
 		[topbar setBarStyle:UIBarStyleBlack];
 	}
 	
 	topbar_BarDelegate *delegate = [[topbar_BarDelegate alloc] init];
 	topbar.delegate = delegate;
-	
+
 	// Add the title
-	UINavigationItem *title = [[UINavigationItem alloc] initWithTitle:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"]];
-	[topbar pushNavigationItem:title animated:NO];
+	// stwt: iOS 7+ - skip adding title
+	if (floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_6_1) {
+		UINavigationItem *title = [[UINavigationItem alloc] initWithTitle:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"]];
+		[topbar pushNavigationItem:title animated:NO];
+	}
 
 	// Resize webview scroll area
 	if (floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_6_1) {
 		[[ForgeApp sharedApp] webView].frame = CGRectMake([[ForgeApp sharedApp] webView].frame.origin.x, [[ForgeApp sharedApp] webView].frame.origin.y + topbar.frame.size.height, [[ForgeApp sharedApp] webView].frame.size.width, [[ForgeApp sharedApp] webView].frame.size.height - topbar.frame.size.height);
 	} else {
 		UIEdgeInsets inset = [[ForgeApp sharedApp] webView].scrollView.contentInset;
-		UIEdgeInsets newInset = UIEdgeInsetsMake(inset.top + [topbar_Util topbarInset:topbar], inset.left, inset.bottom, inset.right);
+		// stwt: iOS 7+ - offset webview inset by -25
+		int insetOffset = floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_6_1 ? 0 : 25;
+		UIEdgeInsets newInset = UIEdgeInsetsMake(inset.top + [topbar_Util topbarInset:topbar] - insetOffset, inset.left, inset.bottom, inset.right);
 		[[[ForgeApp sharedApp] webView].scrollView setContentInset:newInset];
 		[[[ForgeApp sharedApp] webView].scrollView setScrollIndicatorInsets:newInset];
 	}

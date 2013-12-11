@@ -106,6 +106,14 @@ static bool hidden = NO;
 	} else {
 		[topbar setTintColor:uiColor];
 	}
+
+	// stwt: iOS 7+ we can only change tint by changing backgroundColor
+	if (floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_6_1) {
+		// nada
+	} else {
+		topbar.backgroundColor = uiColor;
+	}
+
 	[task success:nil];
 }
 
